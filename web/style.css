@@ -1,0 +1,94 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  display:flex;
+  flex-direction:column;
+  margin: 0;
+  padding: 0;
+}
+
+.outer {
+  position:relative;
+  overflow-x: hidden;
+  flex: 1 1 auto;
+
+  > table {
+    display:block;
+
+    > thead {
+      display:flex;
+      flex-direction:column;
+      position:relative;
+
+      > tr {
+        flex: 0 0 40px;
+        line-height: 40px;
+        display:flex;
+        position:relative;
+      }
+
+      &.fixedHeader {
+        height: 40px;
+
+        > tr {
+          overflow:hidden;
+          position:fixed;
+          top:0;
+          right: 0;
+          left: 0;
+          background-color:white;
+          z-index:1;
+          box-shadow: 0px 5px 10px rgba(80,80,80,0.7);
+        }
+      }
+    }
+
+    > tbody {
+      display:flex;
+      flex-direction:column;
+      position:relative;
+      overflow-x: auto;
+
+      > tr {
+        flex: 0 0 40px;
+        line-height: 40px;
+        display:flex;
+        position:relative;
+      }
+    }
+  }
+
+  > .scroller {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    bottom: 10px;
+    position: fixed;
+    bottom: 0;
+
+    > .width {
+      width: 1200px;
+      height: 1px;
+      background-color:rgba(0,0,0,0);
+    }
+  }
+}
+
+td, th {
+  padding: 0 10px;
+  text-align: left;
+  border: solid 1px black;
+  flex: 0 0 200px;
+}
+
+.debug {
+  position:fixed;
+  top:20%;
+  right: 0px;
+  width: 200px;
+  background-color:lightBlue;
+  padding: 5px;
+  z-index:100;
+}
