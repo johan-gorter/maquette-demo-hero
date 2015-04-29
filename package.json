@@ -12,7 +12,7 @@
   },
   "keywords": [],
   "dependencies": {
-    "maquette": "^1.6.0"
+    "maquette": "git://github.com/AFASSoftware/maquette.git#master"
   },
   "devDependencies": {
     "autoprefixer-core": "^5.1.9",
