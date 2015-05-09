@@ -14,6 +14,9 @@ var postcssNested = require('postcss-nested');
 
 var reload = browserSync.reload;
 
+var BROWSERSYNC_PORT = parseInt(process.env.PORT) || 1111;
+var BROWSERSYNC_HOST = process.env.IP || "127.0.0.1";
+
 gulp.task('clean', del.bind(null, ['./build']));
 
 gulp.task('css', function() {
@@ -51,7 +54,8 @@ gulp.task('html', function() {
 
 gulp.task('serve', ['default'], function() {
   browserSync({
-    port: 1111,
+    port: BROWSERSYNC_PORT,
+    host: BROWSERSYNC_HOST,
     notify: false,
     server: 'build'
   });
