@@ -4,8 +4,8 @@ var velocity = require('velocity-animate');
 
 var createHeroManager= function() {
   var addedHeroes = {}; // id -> Element
-  var removedHeroes = {}; // id -> {element, rect}
-  var enterPages = [];
+  var removedHeroes = {}; // id -> Element
+  var enterPages = []; // {element, animation}
   
   var animateChildrenExceptHeroes = function(element, animateParent, heroes, animation) {
     for (var i=0;i<element.childNodes.length;i++) {
@@ -42,10 +42,7 @@ var createHeroManager= function() {
       for (var i=0;i<heroes.length;i++) {
         var hero = heroes[i];
         var heroId = hero.getAttribute('data-hero-id');
-        removedHeroes[heroId] = {
-          element: hero,
-          rect: hero.getBoundingClientRect()
-        };
+        removedHeroes[heroId] = hero;
       }
       if (removeExitingElement) {
         removeExitingElement();
@@ -74,12 +71,13 @@ var createHeroManager= function() {
         if (exitingHero) {
           matchedAddedHeroes.push(addedHeroes[heroId]);
           var enteringHeroElement = addedHeroes[heroId].element;
-          exitingHero.element.style.visibility = 'hidden';
+          exitingHero.style.visibility = 'hidden';
           var newRect = enteringHeroElement.getBoundingClientRect();
           velocity.animate(enteringHeroElement, 'stop');
           enteringHeroElement.style.opacity = '1';
-          var dx = newRect.left - exitingHero.rect.left;
-          var dy = newRect.top - exitingHero.rect.top;
+          var exitingHeroRect = exitingHero.getBoundingClientRect();
+          var dx = newRect.left - exitingHeroRect.left;
+          var dy = newRect.top - exitingHeroRect.top;
           enteringHeroElement.style.transform = 'translateX('+(-dx)+'px) translateY('+(-dy)+'px)';
           velocity.animate(enteringHeroElement,{translateX: [0, -dx], translateY: [0, -dy]}, 350, 'ease-in-out', function() {
             enteringHeroElement.style.transition = '';
