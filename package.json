@@ -12,7 +12,8 @@
   },
   "keywords": [],
   "dependencies": {
-    "maquette": "git://github.com/AFASSoftware/maquette.git#master"
+    "maquette": "git://github.com/AFASSoftware/maquette.git#master",
+    "velocity-animate": "^1.2.2"
   },
   "devDependencies": {
     "autoprefixer-core": "^5.1.9",

@@ -7,5 +7,90 @@ body {
   flex-direction:column;
   margin: 0;
   padding: 0;
+  background-color:white;
+  font-family: sans-serif;
 }
 
+.center {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  position:relative;
+}
+.list {
+  padding: 10px;
+}
+
+.list > .item {
+  position: relative;
+}
+
+.list > .item > .image {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  display: block;
+  transform-origin:50% -5px;
+  font-size: 20px;
+  height: 30px;
+  width: 30px;
+  line-height: 30px;
+  background-color: red;
+  border-radius: 50%;
+  text-align:center;
+  color: white;
+  font-weight:bold;
+}
+
+.list > .item > .title {
+  display:block;
+  height: 40px;
+  padding-left: 40px;
+  line-height: 40px;
+  font-weight: bold;
+  transform-origin:50% 0;
+}
+
+.detail {
+  padding: 0 20px;
+  position: relative;
+  width: 100%;
+}
+
+.detail > .title-background {
+  position:absolute;
+  top:0;left:0;right:0;
+  height:80px;
+  background-color: lightBlue;
+}
+
+.detail > .image {
+  position: absolute;
+  top: 25px;
+  left: 25px;
+  display: block;
+  font-size: 20px;
+  height: 30px;
+  width: 30px;
+  line-height: 30px;
+  background-color: red;
+  border-radius: 50%;
+  text-align:center;
+  color: white;
+  font-weight:bold;
+}
+
+.detail > .title {
+  display:block;
+  position:relative;
+  top:20px;
+  height: 40px;
+  padding-left: 40px;
+  line-height: 40px;
+  font-weight: bold;
+}
+
+.detail > .content {
+  display:block;
+  padding: 50px 0;
+}
