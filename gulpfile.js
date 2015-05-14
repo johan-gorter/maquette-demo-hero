@@ -11,7 +11,8 @@ var sass = require('gulp-sass');
 var autoprefixer = require('autoprefixer-core');
 var postcss = require('gulp-postcss');
 var postcssNested = require('postcss-nested');
-
+var ghPages = require('gulp-gh-pages');
+ 
 var reload = browserSync.reload;
 
 var BROWSERSYNC_PORT = parseInt(process.env.PORT) || 1111;
@@ -63,6 +64,11 @@ gulp.task('serve', ['default'], function() {
   gulp.watch('./web/js/**/*.js', ['scripts']);
   gulp.watch('./web/**/*.css', ['css']);
   gulp.watch('./web/**/*.html', ['html']);
+});
+
+gulp.task('deploy', function() {
+  return gulp.src('./build/**/*')
+    .pipe(ghPages());
 });
 
 gulp.task('default', ['scripts', 'html', "css"]);
