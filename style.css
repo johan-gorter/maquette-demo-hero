@@ -3,8 +3,12 @@
 }
 
 body {
+  display:-webkit-flex;
+  display:-ms-flexbox;
   display:flex;
-  flex-direction:column;
+  -webkit-flex-direction:column;
+      -ms-flex-direction:column;
+          flex-direction:column;
   margin: 0;
   padding: 0;
   background-color:white;
@@ -30,7 +34,8 @@ body {
   top: 5px;
   left: 5px;
   display: block;
-  transform-origin:50% -5px;
+  -webkit-transform-origin:50% -5px;
+          transform-origin:50% -5px;
   font-size: 20px;
   height: 30px;
   width: 30px;
@@ -48,7 +53,8 @@ body {
   padding-left: 40px;
   line-height: 40px;
   font-weight: bold;
-  transform-origin:50% 0;
+  -webkit-transform-origin:50% 0;
+          transform-origin:50% 0;
 }
 
 .detail {
@@ -94,3 +100,4 @@ body {
   display:block;
   padding: 50px 0;
 }
+/*# sourceMappingURL=style.css.map */
