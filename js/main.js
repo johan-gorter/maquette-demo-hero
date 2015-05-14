@@ -1,201 +1,95 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 'use strict';
 
-var maquette = require("maquette");
-var velocity = require("velocity-animate");
+var maquette = require('maquette');
+var velocity = require('velocity-animate');
+var createHeroManager = require('./hero-manager');
 
 var h = maquette.h;
 
 var focussedId = null;
 var items = [
-  {id: 1, title: "Lorem"},
-  {id: 2, title: "ipsum"},
-  {id: 3, title: "dolor"},
-  {id: 4, title: "sit"},
-  {id: 5, title: "amet"}
+  {id: 1, title: 'Lorem'},
+  {id: 2, title: 'ipsum'},
+  {id: 3, title: 'dolor'},
+  {id: 4, title: 'sit'},
+  {id: 5, title: 'amet'}
   // adipiscing elit
 ];
 
+// The object managing the hero transitions
+var heroManager = createHeroManager();
+
+var colorFor = function(name) {
+  return 'background-color:hsl(' + (name.charCodeAt(0) * 360 / 20) + ',75%,50%)';
+};
+
+// The animations
+
 var enterItem = function(element) {
   heroManager.registerEnteringHeroes(element);
-  element.style.height = "0px";
-  velocity.animate(element, {height: "40px"}, 350, "ease-in-out", function() {element.style.height = "";});
+  element.style.height = '0px';
+  velocity.animate(element, {height: '40px'}, 350, 'ease-in-out', function() {element.style.height = '';});
   for (var i=0;i < element.childNodes.length;i++) {
     var childNode = element.childNodes[i];
-    childNode.style.transform = "scaleY(0)";
-    velocity.animate(childNode, {scaleY: [1,0]}, 350, "ease-in-out");
+    childNode.style.transform = 'scaleY(0)';
+    velocity.animate(childNode, {scaleY: [1,0]}, 350, 'ease-in-out');
   }
 };
 
 var exitItem = function(element, removeElement) {
   heroManager.registerExitingHeroes(element, null);
-  velocity.animate(element, {height: "0px"}, 350, "ease-in-out", removeElement);
+  velocity.animate(element, {height: '0px'}, 350, 'ease-in-out', removeElement);
   for (var i=0;i < element.childNodes.length;i++) {
     var childNode = element.childNodes[i];
-    velocity.animate(childNode, {scaleY: "0"}, 350, "ease-in-out");
+    velocity.animate(childNode, {scaleY: '0'}, 350, 'ease-in-out');
   }
 };
 
 var fadeOutPage = function(element, removeElement) {
-  element.style.position = "absolute";
-  element.style.top = "0";
-  element.style.zIndex = "-2";
+  element.style.position = 'absolute';
+  element.style.top = '0';
+  element.style.zIndex = '-2';
   heroManager.registerExitingHeroes(element, undefined);
-  for (var i=0;i < element.childNodes.length;i++) {
-    var childNode = element.childNodes[i];
-    velocity.animate(childNode, {opacity: 0}, {delay: 200, duration:500, easing:"ease-out", complete: removeElement});
-  }
+  velocity.animate(element, {opacity: 0}, {delay: 200, duration:500, easing:'ease-out', complete: removeElement});
+};
+
+var fadeIn = function(element) {
+  // This function will be passed to the hero-manager as the pageEnter animation.
+  element.style.opacity = "0";
+  velocity.animate(element, {opacity: 1}, {delay: 200, duration:500, easing:"ease-out", complete: function() {
+    element.style.opacity = "";
+  }});  
 };
 
 var fadeInPage = function(element) {
-  heroManager.registerEnteringHeroes(element);
-  for (var i=0;i < element.childNodes.length;i++) {
-    (function(){
-      var childNode = element.childNodes[i];
-      childNode.style.opacity = "0";
-      velocity.animate(childNode, {opacity: 1}, {delay: 200, duration:500, easing:"ease-out", complete: function() {
-        childNode.style.opacity = "";
-      }});
-    }());
-  }
+  heroManager.registerEnterPage(element, fadeIn);
 };
 
-var createHeroManager= function() {
-  var addedHeroes = {}; // id -> Element
-  var removedHeroes = {}; // id -> {element, rect}
-  var fadeInElements = [];
-  
-  var fadeIn = function(element) {
-    element.style.opacity = "0";
-    velocity.animate(element, {opacity: 1}, {delay: 200, duration:500, easing:"ease-out", complete: function() {
-      element.style.opacity = "";
-    }});
-  };
-  
-  var fadeInChildrenExceptHeroes = function(element, fadeInParent, heroes) {
-    for (var i=0;i<element.childNodes.length;i++) {
-      var child = element.childNodes[i];
-      var action = "fadeIn";
-      heroes.forEach(function(hero) {
-        if (action === "fadeIn") {
-          if (hero === child) {
-            action = null;
-          } else {
-            var heroParent = hero.parentNode;
-            while (heroParent!==fadeInParent) {
-              if (heroParent === child) {
-                action = "fadeInChildren";
-                return;
-              }
-              heroParent = heroParent.parentNode;
-            }
-          }
-        }
-      });
-      if (action === "fadeIn") {
-        fadeIn(child);
-      } else if (action === "fadeInChildren") {
-        fadeInChildrenExceptHeroes(child, fadeInParent, heroes);
-      }
-    }
-  };
-
-  var heroManager = {
-    registerExitingHeroes: function(exitingElement, removeExitingElement) {
-      var heroes = exitingElement.querySelectorAll("*[data-hero-id]");
-      for (var i=0;i<heroes.length;i++) {
-        var hero = heroes[i];
-        var heroId = hero.getAttribute("data-hero-id");
-        removedHeroes[heroId] = {
-          element: hero,
-          rect: hero.getBoundingClientRect()
-        };
-      }
-      if (removeExitingElement) {
-        removeExitingElement();
-      }
-    },
-    registerEnteringHeroes: function(enteringElement, fadeInParent) {
-      var heroes = enteringElement.querySelectorAll("*[data-hero-id]");
-      for (var i=0;i<heroes.length;i++) {
-        var hero = heroes[i];
-        var heroId = hero.getAttribute("data-hero-id");
-        addedHeroes[heroId] = {element: hero, fadeInParent: fadeInParent};
-      }
-    },
-    registerFadeIn: function(enteringElement) {
-      fadeInElements.push(enteringElement);
-      heroManager.registerEnteringHeroes(enteringElement, enteringElement);
-    },
-    reconstructMoves: function() {
-      var matchedAddedHeroes = [];
-      Object.keys(addedHeroes).forEach(function(heroId) {
-        var exitingHero = removedHeroes[heroId];
-        if (exitingHero) {
-          matchedAddedHeroes.push(addedHeroes[heroId]);
-          var enteringHeroElement = addedHeroes[heroId].element;
-          exitingHero.element.style.visibility = "hidden";
-          var newRect = enteringHeroElement.getBoundingClientRect();
-          velocity.animate(enteringHeroElement, "stop");
-          enteringHeroElement.style.opacity = "1";
-          var dx = newRect.left - exitingHero.rect.left;
-          var dy = newRect.top - exitingHero.rect.top;
-          enteringHeroElement.style.transform = "translateX("+(-dx)+"px) translateY("+(-dy)+"px)";
-          velocity.animate(enteringHeroElement,{translateX: [0, -dx], translateY: [0, -dy]}, 350, "ease-in-out", function() {
-            enteringHeroElement.style.transition = "";
-          });
-        }
-      });
-      fadeInElements.forEach(function(fadeInParent) {
-        var heroes = [];
-        matchedAddedHeroes.forEach(function(addedHero) {
-          if (addedHero.fadeInParent === fadeInParent) {
-            heroes.push(addedHero.element);
-          }
-        });
-        if (heroes.length === 0) {
-          fadeIn(fadeInParent);
-        } else {
-          fadeInChildrenExceptHeroes(fadeInParent, fadeInParent, heroes);
-        }
-      });
-      
-      fadeInElements = [];
-      addedHeroes = {};
-      removedHeroes = {};
-    }
-  };
-  return heroManager;
-};
-
-var colorFor = function(name) {
-  return "background-color:hsl(" + (name.charCodeAt(0) * 360 / 20) + ",75%,50%)";
-};
-
-var heroManager = createHeroManager();
+// The Virtual DOM
 
 function renderMaquette() {
-  return h("body", [
-    h("div.center", {afterUpdate: heroManager.reconstructMoves}, [
+  return h('body', [
+    h('div.center', {afterUpdate: heroManager.execute}, [
       focussedId ? [
-        h("div.detail", {enterAnimation: heroManager.registerFadeIn, exitAnimation: fadeOutPage}, [
+        h('div.detail', {enterAnimation: fadeInPage, exitAnimation: fadeOutPage}, [
           items.map(function(item){
             if (item.id === focussedId) {
               return [
-                h("div.title-background"),
-                h("div.image", {"data-hero-id": "item-image-"+item.id, style:colorFor(item.title)}, [item.title.substr(0,1)]),
-                h("div.title", {"data-hero-id": "item-title-"+item.id}, [item.title]),
-                h("div.content", ["Lorem ipsum dolor sit amet"])
+                h('div.title-background'),
+                h('div.image', {'data-hero-id': 'item-image-'+item.id, style:colorFor(item.title)}, [item.title.substr(0,1)]),
+                h('div.title', {'data-hero-id': 'item-title-'+item.id}, [item.title]),
+                h('div.content', ['Lorem ipsum dolor sit amet'])
               ];
             }
           })
         ])
       ] : [
-        h("div.list", {enterAnimation: heroManager.registerFadeIn, exitAnimation: fadeOutPage}, [
+        h('div.list', {enterAnimation: fadeInPage, exitAnimation: fadeOutPage}, [
           items.map(function(item) {
-            return h("div.item", {key: item.id, enterAnimation: enterItem, exitAnimation: exitItem}, [
-              h("div.image", {"data-hero-id": "item-image-"+item.id, style:colorFor(item.title)}, [item.title.substr(0,1)]),
-              h("div.title", {"data-hero-id": "item-title-"+item.id}, [item.title])
+            return h('div.item', {key: item.id, enterAnimation: enterItem, exitAnimation: exitItem}, [
+              h('div.image', {'data-hero-id': 'item-image-'+item.id, style:colorFor(item.title)}, [item.title.substr(0,1)]),
+              h('div.title', {'data-hero-id': 'item-title-'+item.id}, [item.title])
             ]);
           })
         ])
@@ -206,7 +100,11 @@ function renderMaquette() {
 
 var projector = maquette.createProjector(document.body, renderMaquette);
 
+
+// The autonomic script that is executed continuously
+var scriptIndex = 0;
 var originalItems = items.slice();
+
 var script = [
   function() {
     focussedId = 4;
@@ -235,7 +133,7 @@ var script = [
   },
   function() {
     // add one item
-    items.splice(2, 0, {id: 6, title: "consectetur"});
+    items.splice(2, 0, {id: 6, title: 'consectetur'});
   },
   function() {
     // remove one item
@@ -245,20 +143,20 @@ var script = [
     items = originalItems.slice();
   }
 ];
-var scriptIndex = 0;
+
 var nextStep = function() {
   script[scriptIndex]();
   scriptIndex++;
-  
   if (!script[scriptIndex]) {
     scriptIndex = 0;
   }
   projector.scheduleRender();
   setTimeout(nextStep, 1000);
 };
+
 setTimeout(nextStep, 500);
 
-},{"maquette":2,"velocity-animate":3}],2:[function(require,module,exports){
+},{"./hero-manager":4,"maquette":2,"velocity-animate":3}],2:[function(require,module,exports){
 !function(e){"use strict";var t=[],r=function(e,t){var r={};return Object.keys(e).forEach(function(t){r[t]=e[t]}),t&&Object.keys(t).forEach(function(e){r[e]=t[e]}),r},o=function(e,t,r,a,s){for(var d=0;d<t.length;d++){var u=t[d];Array.isArray(u)?a=o(e,u,r,a,s):null!==u&&void 0!==u&&(u.hasOwnProperty("vnodeSelector")?n(e,u,s):u=i(u),r.splice(a,0,u),a++)}return a},n=function(e,t,r){var o=t.vnodeSelector;if(!(""===o||t.properties&&t.properties.key)){for(var n=0;n<r.length;n++)if(o===r[n])throw new Error("["+e+"] contains indistinguishable child nodes ["+o+"], please add unique key properties.");r.push(o)}},i=function(e){return{vnodeSelector:"",properties:void 0,children:void 0,text:null===e||void 0===e?"":e.toString(),domNode:null}},a=function(e,t){if(null===t||void 0===t)return void 0;if(!Array.isArray(t))return t.hasOwnProperty("vnodeSelector")?[t]:[i(t)];for(var r=0,a=[];r<t.length;){var s=t[r];null===s||void 0===s?t.splice(r,1):Array.isArray(s)?(t.splice(r,1),r=o(e,s,t,r,a)):s.hasOwnProperty("vnodeSelector")?(n(e,s,a),r++):(t[r]=i(s),r++)}return t},s={namespace:void 0,transitions:{enter:function(){throw new Error("Provide a transitions object to the projectionOptions to do animations")},exit:function(){throw new Error("Provide a transitions object to the projectionOptions to do animations")}}},d=function(e){return r(s,e)},u=function(e,t,r){if(t){var o=r.eventHandlerInterceptor;for(var n in t){var i=t[n];if("class"===n||"className"===n||"classList"===n)throw new Error("Property "+a+" is not supported, use 'classes' instead.");if("classes"===n)for(var a in i)i[a]&&e.classList.add(a);else if("styles"===n)for(var s in i){var d=i[s];if(d){if("string"!=typeof d)throw new Error("Style values may only be strings");e.style[s]=d}}else{if("key"===n)continue;if(null===i||void 0===i)continue;var u=typeof i;"function"===u?(o&&0===n.lastIndexOf("on",0)&&(i=o(n,i,e),"oninput"===n&&!function(){var e=i;i=function(t){t.target["oninput-value"]=t.target.value,e.apply(this,[t])}}()),e[n]=i):"string"===u&&"value"!==n?e.setAttribute(n,i):e[n]=i}}}},l=function(e,t,r){if(r){var o=!1;for(var n in r){var i=r[n],a=t[n];if("classes"===n){var s=e.classList;for(var d in i){var u=!!i[d],l=!!a[d];u!==l&&(o=!0,u?s.add(d):s.remove(d))}}else if("styles"===n)for(var c in i){var p=i[c],f=a[c];if(p!==f)if(o=!0,p){if("string"!=typeof p)throw new Error("Style values may only be strings");e.style[c]=p}else e.style[c]=""}else if(i||"string"!=typeof a||(i=""),"value"===n)e[n]!==i&&e["oninput-value"]!==i&&(e[n]=i),i!==a&&(o=!0);else if(i!==a){var v=typeof i;if("function"===v)throw new Error("Functions may not be updated on subsequent renders (property: "+n+"). Hint: declare event handler functions outside the render() function.");"string"===v?e.setAttribute(n,i):e[n]=i,o=!0}}return o}},c=function(e,t,r){if(t)for(var o=0;o<t.length;o++)y(t[o],e,void 0,r)},p=function(e,t){return e.vnodeSelector!==t.vnodeSelector?!1:e.properties&&t.properties?e.properties.key===t.properties.key:!e.properties&&!t.properties},f=function(e,t,r){if(""!==t.vnodeSelector)for(var o=r;o<e.length;o++)if(p(e[o],t))return o;return-1},v=function(e,t){if(e.properties){var r=e.properties.enterAnimation;r&&("function"==typeof r?r(e.domNode,e.properties):t.enter(e.domNode,e.properties,r))}},m=function(e,t){var r=e.domNode;if(e.properties){var o=e.properties.exitAnimation;if(o){r.style.pointerEvents="none";var n=function(){r.parentNode&&r.parentNode.removeChild(r)};return"function"==typeof o?void o(r,n,e.properties):void t.exit(e.domNode,e.properties,o,n)}}r.parentNode&&r.parentNode.removeChild(r)},h=function(e,r,o,n){if(r===o)return!1;r=r||t,o=o||t;for(var i,a=n.transitions,s=0,d=0,u=!1;d<o.length;){var l=s<r.length?r[s]:void 0,c=o[d];if(void 0!==l&&p(l,c))u=w(l,c,n)||u,s++;else{var h=f(r,c,s+1);if(h>=0){for(i=s;h>i;i++)m(r[i],a);u=w(r[h],c,n)||u,s=h+1}else y(c,e,s<r.length?r[s].domNode:void 0,n),v(c,a)}d++}if(r.length>s)for(i=s;i<r.length;i++)m(r[i],a);return u},y=function(e,t,o,n){var i,a,s=e.vnodeSelector;if(""===s)i=e.domNode=document.createTextNode(e.text),void 0!==o?t.insertBefore(i,o):t.appendChild(i);else{var d,u=0,l="tag",c=void 0,p=s.length;for(a=0;p>a;a++){if(d=l,a===p-1)c=0===u?s:s.substr(u);else{var f=s.charAt(a);"."===f?(l="class",c=s.substring(u,a),u=a+1):"#"===f&&(l="id",c=s.substring(u,a),u=a+1)}void 0!==c&&("tag"===d?("svg"===c&&(n=r(n,{namespace:"http://www.w3.org/2000/svg"})),i=e.domNode=void 0!==n.namespace?document.createElementNS(n.namespace,c):document.createElement(c),void 0!==o?t.insertBefore(i,o):t.appendChild(i)):"class"===d?i.classList.add(c):i.id=c,c=void 0)}g(i,e,n)}},g=function(e,t,r){c(e,t.children,r),t.text&&(e.textContent=t.text),u(e,t.properties,r),t.properties&&t.properties.afterCreate&&t.properties.afterCreate(e,r,t.vnodeSelector,t.properties,t.children)},w=function(e,t,o){var n=e.domNode;if(!n)throw new Error("previous node was not mounted");var i=!1;if(e===t)return i;var a=!1;return""===t.vnodeSelector?t.text!==e.text&&(n.nodeValue=t.text,i=!0):("svg"===t.vnodeSelector.substr(0,3)&&(o=r(o,{namespace:"http://www.w3.org/2000/svg"})),e.text!==t.text&&(i=!0,void 0===t.text?n.removeChild(n.firstChild):n.textContent=t.text),a=h(n,e.children,t.children,o),a=l(n,e.properties,t.properties,o)||a,t.properties&&t.properties.afterUpdate&&t.properties.afterUpdate(n,o,t.vnodeSelector,t.properties,t.children)),a&&t.properties&&t.properties.updateAnimation&&t.properties.updateAnimation(n,t.properties,e.properties),t.domNode=e.domNode,i},x=e.performance&&e.performance.now?e.performance:{offset:new Date,now:function(){return new Date-this.offset}},N={lastCreateVDom:null,lastCreateDom:null,lastUpdateVDom:null,lastUpdateDom:null,lastProjector:null,createExecuted:function(e,t,r,o){N.lastProjector=o,N.lastCreateVDom=t-e,N.lastCreateDom=r-t},updateExecuted:function(e,t,r,o){N.lastProjector=o,N.lastUpdateVDom=t-e,N.lastUpdateDom=r-t}},E=function(e,t){if(!e.vnodeSelector)throw new Error("Invalid vnode argument");return{update:function(r){if(e.vnodeSelector!==r.vnodeSelector)throw new Error("The selector for the root VNode may not be changed. (consider using mergeDom with one extra level)");w(e,r,t),e=r},domNode:e.domNode}},S={h:function(e,t,r){if(2===arguments.length&&"string"==typeof e){if(Array.isArray(t))r=t,t=void 0;else if(void 0===t)throw new Error("undefined is not a valid value for properties, maybe you forgot the comma between } and [ ?")}else if("string"!=typeof e||r&&!Array.isArray(r)||void 0!==t&&"object"!=typeof t)throw new Error("Incorrect arguments passed to the h() function. Correct signature: h(string, optional object, optional array)");var o=void 0;return r&&1===r.length&&"string"==typeof r[0]?(o=r[0],r=void 0):r=a(e,r),{vnodeSelector:e,properties:t,children:r,text:o,domNode:null}},createDom:function(e,t){return t=d(t),y(e,document.createElement("div"),void 0,t),E(e,t)},appendToDom:function(e,t,r){return r=d(r),y(t,e,void 0,r),E(t,r)},mergeDom:function(e,t,r){return r=d(r),t.domNode=e,g(e,t,r),E(t,r)},createProjector:function(e,t,r){r=d(r),r.eventHandlerInterceptor=function(e,t){return function(){return s.scheduleRender(),t.apply(this,arguments)}};var o,n=void 0,i=!1,a=function(){if(o=void 0,n){var i=x.now(),a=t(),d=x.now();n.update(a),N.updateExecuted(i,d,x.now(),s)}else{var u=x.now(),l=t(),c=x.now();n=S.mergeDom(e,l,r),N.createExecuted(u,c,x.now(),s)}};o=requestAnimationFrame(a);var s={scheduleRender:function(){o||i||(o=requestAnimationFrame(a))},destroy:function(){o&&(cancelAnimationFrame(o),o=void 0),i=!0}};return s},createCache:function(){var e=void 0,t=void 0,r={invalidate:function(){t=void 0,e=void 0},result:function(r,o){if(e)for(var n=0;n<r.length;n++)e[n]!==r[n]&&(t=void 0);return t||(t=o(),e=r),t}};return r},stats:N};"undefined"!=typeof module&&module.exports?module.exports=S:"function"==typeof define&&define.amd?define(function(){return S}):window.maquette=S}(this);
 },{}],3:[function(require,module,exports){
 /*! VelocityJS.org (1.2.2). (C) 2014 Julian Shapiro. MIT @license: en.wikipedia.org/wiki/MIT_License */
@@ -4129,7 +4027,118 @@ return function (global, window, document, undefined) {
 /* The CSS spec mandates that the translateX/Y/Z transforms are %-relative to the element itself -- not its parent.
 Velocity, however, doesn't make this distinction. Thus, converting to or from the % unit with these subproperties
 will produce an inaccurate conversion value. The same issue exists with the cx/cy attributes of SVG circles and ellipses. */
-},{}]},{},[1])
+},{}],4:[function(require,module,exports){
+'use strict';
+
+var velocity = require('velocity-animate');
+
+var createHeroManager= function() {
+  var addedHeroes = {}; // id -> Element
+  var removedHeroes = {}; // id -> Element
+  var enterPages = []; // {element, animation}
+  
+  var animateChildrenExceptHeroes = function(element, animateParent, heroes, animation) {
+    for (var i=0;i<element.childNodes.length;i++) {
+      var child = element.childNodes[i];
+      var action = 'animate';
+      heroes.forEach(function(hero) {
+        if (action === 'animate') {
+          if (hero === child) {
+            action = null;
+          } else {
+            var heroParent = hero.parentNode;
+            while (heroParent!==animateParent) {
+              if (heroParent === child) {
+                action = 'animateChildren';
+                return;
+              }
+              heroParent = heroParent.parentNode;
+            }
+          }
+        }
+      });
+      if (action === 'animate') {
+        animation(child);
+      } else if (action === 'animateChildren') {
+        animateChildrenExceptHeroes(child, animateParent, heroes, animation);
+      }
+    }
+  };
+
+  var heroManager = {
+    registerExitingHeroes: function(exitingElement, removeExitingElement) {
+      // the exitingElement is searched for hero elements that are removed
+      var heroes = exitingElement.querySelectorAll('*[data-hero-id]');
+      for (var i=0;i<heroes.length;i++) {
+        var hero = heroes[i];
+        var heroId = hero.getAttribute('data-hero-id');
+        removedHeroes[heroId] = hero;
+      }
+      if (removeExitingElement) {
+        removeExitingElement();
+      }
+    },
+    registerEnteringHeroes: function(enteringElement, animateParent) {
+      // the enteringElement is searched for hero elements that are added
+      var heroes = enteringElement.querySelectorAll('*[data-hero-id]');
+      for (var i=0;i<heroes.length;i++) {
+        var hero = heroes[i];
+        var heroId = hero.getAttribute('data-hero-id');
+        addedHeroes[heroId] = {element: hero, animateParent: animateParent};
+      }
+    },
+    registerEnterPage: function(enteringElement, enterPageAnimation) {
+      // enterPageAnimation is applied recursively to all children of enteringElement, except for elements who are a parent of a hero that is doing a hero-transition.
+      // the enteringElement is also searched for hero elements that are entering.
+      enterPages.push({element: enteringElement, animation: enterPageAnimation});
+      heroManager.registerEnteringHeroes(enteringElement, enteringElement);
+    },
+    execute: function() {
+      // Matches removed and added heroes and performs a hero-transition between them. Also executes enter-page animations.
+      var matchedAddedHeroes = [];
+      Object.keys(addedHeroes).forEach(function(heroId) {
+        var exitingHero = removedHeroes[heroId];
+        if (exitingHero) {
+          matchedAddedHeroes.push(addedHeroes[heroId]);
+          var enteringHeroElement = addedHeroes[heroId].element;
+          exitingHero.style.visibility = 'hidden';
+          var newRect = enteringHeroElement.getBoundingClientRect();
+          velocity.animate(enteringHeroElement, 'stop');
+          enteringHeroElement.style.opacity = '1';
+          var exitingHeroRect = exitingHero.getBoundingClientRect();
+          var dx = newRect.left - exitingHeroRect.left;
+          var dy = newRect.top - exitingHeroRect.top;
+          enteringHeroElement.style.transform = 'translateX('+(-dx)+'px) translateY('+(-dy)+'px)';
+          velocity.animate(enteringHeroElement,{translateX: [0, -dx], translateY: [0, -dy]}, 350, 'ease-in-out', function() {
+            enteringHeroElement.style.transition = '';
+          });
+        }
+      });
+      enterPages.forEach(function(enterPage) {
+        var pageElement = enterPage.element;
+        var heroes = [];
+        matchedAddedHeroes.forEach(function(addedHero) {
+          if (addedHero.animateParent === pageElement) {
+            heroes.push(addedHero.element);
+          }
+        });
+        if (heroes.length === 0) {
+          enterPage.animation(pageElement);
+        } else {
+          animateChildrenExceptHeroes(pageElement, pageElement, heroes, enterPage.animation);
+        }
+      });
+      
+      enterPages = [];
+      addedHeroes = {};
+      removedHeroes = {};
+    }
+  };
+  return heroManager;
+};
+
+module.exports = createHeroManager;
+},{"velocity-animate":3}]},{},[1])
 
 
 //# sourceMappingURL=main.js.map

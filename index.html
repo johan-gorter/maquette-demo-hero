@@ -7,7 +7,32 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
+  <main>
+    <h1>Maquette demo</h1>
+    <h2>"Hero transitions"</h2>
+    <p>
+      The term 'hero-transition' was coined by the Polymer project. They describe it as: 
+      <i>'hero-transition' transforms two elements in different pages such that they appear
+      to be shared across the pages</i> (<a href="https://github.com/Polymer/core-animated-pages/blob/master/transitions/hero-transition.html">Source</a>). 
+    </p>
+    <p>
+      One of the important aspects of <a href="http://maquettejs.org">maquette</a> is animations. So is maquette also able to perform hero-transitions?
+      Maquette has support for both disappearing and appearing elements. But in order to perform a hero transition, we need to be able to match a
+      'hero' element in a disappearing element to a 'hero' element in an appearing element. 
+    </p>
+    <p>
+      For this demonstration we created a hero-manager object that is able to do just that. 
+      The hero-manager is hooked up to the normal enter and exit animations and to the afterUpdate callback.
+      In the afterUpdate callback the exiting heroes are matched with entering heroes and then hero-transition animations are started.
+    </p>
+    <p>
+      We hope this demo convinced you of the flexibility that <a href="http://maquettejs.org">maquette</a> gives you with regard to animations. 
+      The sourcecode for this demo can be found <a href="https://github.com/johan-gorter/maquette-demo-hero">here</a>. 
+    </p>
+    <p>
+      To the <a href="http://maquettejs.org">maquette homepage</a>.
+    </p>
+  </main>
   <script src="js/main.js"></script>
 </body>
 </html>
