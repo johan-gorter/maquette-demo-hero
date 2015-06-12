@@ -12,7 +12,7 @@
   },
   "keywords": [],
   "dependencies": {
-    "maquette": "git://github.com/AFASSoftware/maquette.git#master",
+    "maquette": "^2.0.0",
     "velocity-animate": "^1.2.2"
   },
   "devDependencies": {
@@ -23,8 +23,9 @@
     "gulp": "^3.8.11",
     "gulp-gh-pages": "^0.5.1",
     "gulp-postcss": "^5.1.1",
-    "gulp-sass": "^1.3.3",
+    "gulp-sass": "^2.0.1",
     "gulp-sourcemaps": "^1.5.1",
+    "node-sass": "^3.2.0",
     "postcss": "^4.1.5",
     "postcss-nested": "^0.2.2",
     "vinyl-buffer": "^1.0.0",

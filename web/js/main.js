@@ -68,36 +68,35 @@ var fadeInPage = function(element) {
 // The Virtual DOM
 
 function renderMaquette() {
-  return h('body', [
-    h('div.center', {afterUpdate: heroManager.execute}, [
-      focussedId ? [
-        h('div.detail', {enterAnimation: fadeInPage, exitAnimation: fadeOutPage}, [
-          items.map(function(item){
-            if (item.id === focussedId) {
-              return [
-                h('div.title-background'),
-                h('div.image', {'data-hero-id': 'item-image-'+item.id, style:colorFor(item.title)}, [item.title.substr(0,1)]),
-                h('div.title', {'data-hero-id': 'item-title-'+item.id}, [item.title]),
-                h('div.content', ['Lorem ipsum dolor sit amet'])
-              ];
-            }
-          })
-        ])
-      ] : [
-        h('div.list', {enterAnimation: fadeInPage, exitAnimation: fadeOutPage}, [
-          items.map(function(item) {
-            return h('div.item', {key: item.id, enterAnimation: enterItem, exitAnimation: exitItem}, [
+  return h('div.center', {afterUpdate: heroManager.execute}, [
+    focussedId ? [
+      h('div.detail', {enterAnimation: fadeInPage, exitAnimation: fadeOutPage}, [
+        items.map(function(item){
+          if (item.id === focussedId) {
+            return [
+              h('div.title-background'),
               h('div.image', {'data-hero-id': 'item-image-'+item.id, style:colorFor(item.title)}, [item.title.substr(0,1)]),
-              h('div.title', {'data-hero-id': 'item-title-'+item.id}, [item.title])
-            ]);
-          })
-        ])
-      ]
-    ])
+              h('div.title', {'data-hero-id': 'item-title-'+item.id}, [item.title]),
+              h('div.content', ['Lorem ipsum dolor sit amet'])
+            ];
+          }
+        })
+      ])
+    ] : [
+      h('div.list', {enterAnimation: fadeInPage, exitAnimation: fadeOutPage}, [
+        items.map(function(item) {
+          return h('div.item', {key: item.id, enterAnimation: enterItem, exitAnimation: exitItem}, [
+            h('div.image', {'data-hero-id': 'item-image-'+item.id, style:colorFor(item.title)}, [item.title.substr(0,1)]),
+            h('div.title', {'data-hero-id': 'item-title-'+item.id}, [item.title])
+          ]);
+        })
+      ])
+    ]
   ]);
 }
 
-var projector = maquette.createProjector(document.body, renderMaquette);
+var projector = maquette.createProjector();
+projector.append(document.body, renderMaquette);
 
 
 // The autonomic script that is executed continuously
